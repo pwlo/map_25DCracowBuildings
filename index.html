@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.5D Buildings in Krakow</title>
+  <link href="https://cdn.osmbuildings.org/4.1.1/OSMBuildings.css" rel="stylesheet">
+  <script src="https://cdn.osmbuildings.org/4.1.1/OSMBuildings.js"></script>
+  <style>
+    html, body, #map {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    /* Styl dla kontenera logo */
+    .logo-container {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 1000;
+    }
+
+    .logo-container img {
+      width: 120px; /* Ustalony rozmiar logo */
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div id="map"></div>
+
+  <!-- Kontener na logo -->
+  <div class="logo-container">
+    <a href="http://www.kpgeo.pl" target="_blank">
+      <img src="./img/Logo1.png" alt="KPGeo Logo">
+    </a>
+  </div>
+
+  <script>
+    // Inicjalizacja OSM Buildings z centrum na rynku w Krakowie
+    var map = new OSMBuildings({
+      container: 'map',
+      position: { latitude: 50.06143, longitude: 19.93658 }, // Centrum Krakowa - Rynek Główny
+      zoom: 16,
+      minZoom: 15,
+      maxZoom: 20,
+      tilt: 30, // Maksymalne pochylenie mapy ustawione na 30 stopni
+      rotation: 0, // Ustawienie domyślnej orientacji
+      attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>', // Pełna atrybucja
+    });
+
+    // Dodanie podkładu mapy z OSM Carto (CartoDB Voyager)
+    map.addMapTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      maxZoom: 20
+    });
+
+    // Dodanie budynków z lokalnego pliku GeoJSON
+    fetch('data/test.geojson') // Ścieżka do lokalnego pliku GeoJSON
+      .then(response => response.json())
+      .then(data => {
+        map.addGeoJSON(data); // Dodanie danych GeoJSON do mapy
+      })
+      .catch(error => console.error('Błąd wczytywania pliku GeoJSON:', error));
+
+    // Ograniczenie maksymalnego pochylenia mapy do 30 stopni
+    map.on('tilt', function(event) {
+      if (event.tilt > 30) {
+        map.setTilt(30); // Ograniczenie pochylenia
+      }
+    });
+  </script>
+
+</body>
+
+</html>
