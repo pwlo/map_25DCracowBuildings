@@ -1,83 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2.5D Buildings in Krakow</title>
-  <link href="https://cdn.osmbuildings.org/4.1.1/OSMBuildings.css" rel="stylesheet">
-  <script src="https://cdn.osmbuildings.org/4.1.1/OSMBuildings.js"></script>
+  <title>Mapbox GL JS - 2.5D Buildings with OSM Carto</title>
+  <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
   <style>
-    html, body, #map {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-    }
+    body, html { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
-    body {
-      font-family: 'Open Sans', sans-serif;
-    }
-
-    /* Styl dla kontenera logo */
     .logo-container {
       position: absolute;
       bottom: 10px;
-      left: 10px;
+      left: 10px; /* Logo on the left */
       z-index: 1000;
     }
 
     .logo-container img {
-      width: 120px; /* Ustalony rozmiar logo */
+      width: 120px;
+    }
+
+    .credit-container {
+      position: absolute;
+      bottom: 10px;
+      right: 10px; /* Attribution on the right */
+      z-index: 1000;
+      font-family: 'Arial', sans-serif;
+      font-size: 12px;
+      color: #666;
+      background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+      padding: 5px 10px;
+      border-radius: 5px;
     }
 
   </style>
 </head>
-
 <body>
 
-  <div id="map"></div>
+<div id="map"></div>
 
-  <!-- Kontener na logo -->
-  <div class="logo-container">
-    <a href="http://www.kpgeo.pl" target="_blank">
-      <img src="./img/Logo1.png" alt="KPGeo Logo">
-    </a>
-  </div>
+<!-- Logo container -->
+<div class="logo-container">
+  <a href="http://www.kpgeo.pl" target="_blank">
+    <img src="./img/Logo1.png" alt="KPGeo Logo">
+  </a>
+</div>
 
-  <script>
-    // Inicjalizacja OSM Buildings z centrum na rynku w Krakowie
-    var map = new OSMBuildings({
-      container: 'map',
-      position: { latitude: 50.06143, longitude: 19.93658 }, // Centrum Krakowa - Rynek Główny
-      zoom: 16,
-      minZoom: 15,
-      maxZoom: 20,
-      tilt: 30, // Maksymalne pochylenie mapy ustawione na 30 stopni
-      rotation: 0, // Ustawienie domyślnej orientacji
-      attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>', // Pełna atrybucja
+<!-- Credit container -->
+<div class="credit-container">
+  © Data: <a href="http://www.kpgeo.pl">KPGeo</a> | 
+  © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, 
+  <a href="https://carto.com/attributions">CARTO</a> | 
+  © Engine: <a href="https://maplibre.org/">MapLibre GL JS</a>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+<script>
+  // Initialize the map using MapLibre GL JS (OpenSource equivalent of Mapbox GL JS)
+  var map = new maplibregl.Map({
+    container: 'map', // ID elementu HTML, w którym zostanie osadzona mapa
+    style: {
+      "version": 8,
+      "sources": {
+        "osm-carto": {
+          "type": "raster",
+          "tiles": [
+            "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png" // OSM Carto Tiles
+          ],
+          "tileSize": 256,
+          "attribution": "© OpenStreetMap contributors, © Carto"
+        }
+      },
+      "layers": [
+        {
+          "id": "osm-carto-layer",
+          "type": "raster",
+          "source": "osm-carto",
+          "minzoom": 0,
+          "maxzoom": 20
+        }
+      ]
+    },
+    center: [19.937222, 50.061667], // Kraków
+    zoom: 13, // Początkowy zoom
+    pitch: 45, // Kąt nachylenia widoku
+    bearing: -17.6, // Obrót mapy
+    antialias: true // Gładkie krawędzie budynków
+  });
+
+  // Załaduj GeoJSON z danymi budynków
+  map.on('load', function () {
+    map.addSource('buildings', {
+      'type': 'geojson',
+      'data': 'data/test.geojson' // Ścieżka do pliku GeoJSON z budynkami
     });
 
-    // Dodanie podkładu mapy z OSM Carto (CartoDB Voyager)
-    map.addMapTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      maxZoom: 20
-    });
-
-    // Dodanie budynków z lokalnego pliku GeoJSON
-    fetch('data/test.geojson') // Ścieżka do lokalnego pliku GeoJSON
-      .then(response => response.json())
-      .then(data => {
-        map.addGeoJSON(data); // Dodanie danych GeoJSON do mapy
-      })
-      .catch(error => console.error('Błąd wczytywania pliku GeoJSON:', error));
-
-    // Ograniczenie maksymalnego pochylenia mapy do 30 stopni
-    map.on('tilt', function(event) {
-      if (event.tilt > 30) {
-        map.setTilt(30); // Ograniczenie pochylenia
+    // Dodanie warstwy budynków w 2.5D
+    map.addLayer({
+      'id': '3d-buildings',
+      'source': 'buildings',
+      'type': 'fill-extrusion',
+      'paint': {
+        'fill-extrusion-color': '#FFFFFF', // Biały kolor budynków
+        'fill-extrusion-height': ['get', 'height'], // Pobieranie wysokości z danych GeoJSON
+        'fill-extrusion-base': 0, // Podstawa budynków
+        'fill-extrusion-opacity': 1.0 // Pełna widoczność
       }
     });
-  </script>
+
+    // Dodanie popupu po kliknięciu na budynek
+    map.on('click', '3d-buildings', function (e) {
+      var height = e.features[0].properties.height || 'unknown';
+      var coordinates = e.lngLat; // Pobranie współrzędnych miejsca kliknięcia
+
+      // Tworzenie i wyświetlanie popupu
+      new maplibregl.Popup()
+        .setLngLat(coordinates)
+        .setHTML('Building height: ' + height + ' m') // Użycie natywnego popupu
+        .addTo(map);
+    });
+
+    // Zmienianie kursora na "pointer" po najechaniu na budynek
+    map.on('mouseenter', '3d-buildings', function () {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+
+    // Przywrócenie kursora po wyjściu poza budynek
+    map.on('mouseleave', '3d-buildings', function () {
+      map.getCanvas().style.cursor = '';
+    });
+  });
+</script>
 
 </body>
-
 </html>
