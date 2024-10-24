@@ -18,7 +18,6 @@
       font-family: 'Open Sans', sans-serif;
     }
 
-    /* Styl dla kontenera logo */
     .logo-container {
       position: absolute;
       bottom: 10px;
@@ -27,9 +26,8 @@
     }
 
     .logo-container img {
-      width: 120px; /* Ustalony rozmiar logo */
+      width: 120px;
     }
-
   </style>
 </head>
 
@@ -37,7 +35,6 @@
 
   <div id="map"></div>
 
-  <!-- Kontener na logo -->
   <div class="logo-container">
     <a href="http://www.kpgeo.pl" target="_blank">
       <img src="./img/Logo1.png" alt="KPGeo Logo">
@@ -54,7 +51,7 @@
       maxZoom: 20,
       tilt: 30, // Maksymalne pochylenie mapy ustawione na 30 stopni
       rotation: 0, // Ustawienie domyślnej orientacji
-      attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>', // Pełna atrybucja
+      attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>'
     });
 
     // Dodanie podkładu mapy z OSM Carto (CartoDB Voyager)
@@ -66,7 +63,12 @@
     fetch('data/test.geojson') // Ścieżka do lokalnego pliku GeoJSON
       .then(response => response.json())
       .then(data => {
-        map.addGeoJSON(data); // Dodanie danych GeoJSON do mapy
+        map.addGeoJSON(data, {
+          color: 'rgba(255, 255, 255, 1)', // Biały kolor budynków
+          roofColor: 'rgba(150, 150, 150, 1)', // Szary kolor dachów
+          minZoom: 15,
+          maxZoom: 20
+        });
       })
       .catch(error => console.error('Błąd wczytywania pliku GeoJSON:', error));
 
