@@ -120,6 +120,11 @@
       attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>'
     });
 
+    // Domyślna mapa podkładowa - CartoDB Voyager
+    map.addMapTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      maxZoom: 20
+    });
+
     // Funkcja do zmiany podkładu mapy
     function switchBaseMap(style) {
       if (style === 'positron') {
