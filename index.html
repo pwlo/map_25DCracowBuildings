@@ -108,17 +108,19 @@
   </div>
 
   <script>
-    // Inicjalizacja OSM Buildings z centrum na rynku w Krakowie
+    // Inicjalizacja OSM Buildings z limitem tilt na 30 stopni
     var map = new OSMBuildings({
       container: 'map',
-      position: { latitude: 50.06143, longitude: 19.93658 }, // Centrum Krakowa - Rynek Główny
+      position: { latitude: 50.06143, longitude: 19.93658 }, // Kraków
       zoom: 16,
       minZoom: 15,
       maxZoom: 20,
-      tilt: 30, // Maksymalne pochylenie mapy ustawione na 30 stopni
-      rotation: 0, // Ustawienie domyślnej orientacji
+      tilt: 45, // Początkowe nachylenie
+      maxTilt: 45, // Maksymalny tilt ustawiony na 30 stopni
+      rotation: 0,
       attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>'
     });
+
 
     // Domyślna mapa podkładowa - CartoDB Voyager
     map.addMapTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
@@ -157,13 +159,6 @@
         });
       })
       .catch(error => console.error('Błąd wczytywania pliku GeoJSON:', error));
-
-    // Ograniczenie maksymalnego pochylenia mapy do 30 stopni
-    map.on('tilt', function (event) {
-      if (event.tilt > 30) {
-        map.setTilt(30); // Ograniczenie pochylenia
-      }
-    });
 
     // Funkcje dla ikony menu i menu
     const menuIcon = document.getElementById('menu-icon');
