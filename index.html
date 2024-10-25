@@ -18,6 +18,55 @@
       font-family: 'Open Sans', sans-serif;
     }
 
+    .menu-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      z-index: 1001;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Menu styl */
+    .menu-container {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 1001;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .menu-container.show {
+      display: block;
+    }
+
+    /* Stylowanie opcji menu */
+    .menu-container label {
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+      display: flex;
+      align-items: center; /* Wyrównanie radiobuttonów z tekstem */
+      margin-bottom: 8px;
+    }
+
+    .menu-container input[type="radio"] {
+      margin-right: 10px;
+      transform: scale(1.2); /* Zwiększenie kropki */
+    }
+
     .logo-container {
       position: absolute;
       bottom: 10px;
@@ -34,6 +83,23 @@
 <body>
 
   <div id="map"></div>
+
+  <!-- Ikona menu -->
+  <div class="menu-icon" id="menu-icon">
+    <img src="./img/Layers.svg" alt="Menu">
+  </div>
+
+  <!-- Ukryte menu z opcjami map -->
+  <div class="menu-container" id="menu-container">
+    <label class="option">
+      <input type="radio" name="map-style" value="voyager" checked />
+      CartoDB Voyager
+    </label>
+    <label class="option">
+      <input type="radio" name="map-style" value="positron" />
+      CartoDB Positron (Grey)
+    </label>
+  </div>
 
   <div class="logo-container">
     <a href="http://www.kpgeo.pl" target="_blank">
@@ -54,13 +120,28 @@
       attribution: '© Data: <a href="http://www.kpgeo.pl">KPGeo</a> | © Map: <a href="https://openstreetmap.org/copyright/">OpenStreetMap</a> contributors, <a href="https://carto.com/attributions">CARTO</a> | © Engine: <a href="https://osmbuildings.org/copyright/">OSM Buildings</a>'
     });
 
-    // Dodanie podkładu mapy z OSM Carto (CartoDB Voyager)
-    map.addMapTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      maxZoom: 20
+    // Funkcja do zmiany podkładu mapy
+    function switchBaseMap(style) {
+      if (style === 'positron') {
+        map.addMapTiles('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+          maxZoom: 20
+        });
+      } else {
+        map.addMapTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+          maxZoom: 20
+        });
+      }
+    }
+
+    // Słuchanie zmian w radiobuttonach
+    document.querySelectorAll('input[name="map-style"]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        switchBaseMap(this.value);
+      });
     });
 
-    // Dodanie budynków z lokalnego pliku GeoJSON
-    fetch('data/test.geojson') // Ścieżka do lokalnego pliku GeoJSON
+    // Załadowanie GeoJSON z nowymi danymi budynków
+    fetch('data/CRACOW_MODEL_25D.geojson') // Aktualizacja pliku GeoJSON
       .then(response => response.json())
       .then(data => {
         map.addGeoJSON(data, {
@@ -73,10 +154,34 @@
       .catch(error => console.error('Błąd wczytywania pliku GeoJSON:', error));
 
     // Ograniczenie maksymalnego pochylenia mapy do 30 stopni
-    map.on('tilt', function(event) {
+    map.on('tilt', function (event) {
       if (event.tilt > 30) {
         map.setTilt(30); // Ograniczenie pochylenia
       }
+    });
+
+    // Funkcje dla ikony menu i menu
+    const menuIcon = document.getElementById('menu-icon');
+    const menuContainer = document.getElementById('menu-container');
+
+    menuIcon.addEventListener('mouseenter', function () {
+      menuContainer.classList.add('show');
+    });
+
+    menuIcon.addEventListener('mouseleave', function () {
+      setTimeout(function () {
+        if (!menuContainer.matches(':hover')) {
+          menuContainer.classList.remove('show');
+        }
+      }, 200);
+    });
+
+    menuContainer.addEventListener('mouseleave', function () {
+      menuContainer.classList.remove('show');
+    });
+
+    menuContainer.addEventListener('mouseenter', function () {
+      menuContainer.classList.add('show');
     });
   </script>
 
